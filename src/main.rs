@@ -1,8 +1,14 @@
+#![allow(dead_code)]
+
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 
 use png::HasParameters;
+
+mod vec3;
+
+use crate::vec3::Vec3;
 
 fn main() {
     const WIDTH: u32 = 200;
@@ -22,9 +28,15 @@ fn main() {
 
     for y in (0..HEIGHT).rev() {
         for x in 0..WIDTH {
-            data.push((d_width * x) as u8);
-            data.push((d_height * y) as u8);
-            data.push(255 / 5);
+            let v = Vec3::new(
+                (d_width * x) as f32,
+                (d_height * y) as f32,
+                (255 / 5) as f32,
+            );
+
+            data.push(v[0] as u8);
+            data.push(v[1] as u8);
+            data.push(v[2] as u8);
             data.push(255);
         }
     }
