@@ -3,6 +3,8 @@ use std::ops::{
     Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
 };
 
+use rand::prelude::*;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Vec3 {
     pub e: [f32; 3],
@@ -67,6 +69,21 @@ impl Vec3 {
         Vec3 {
             e: [0.0, -1.0, 0.0],
         }
+    }
+
+    pub fn random_in_unit_sphere() -> Vec3 {
+        let mut v: Vec3;
+        let mut rng = rand::thread_rng();
+
+        loop {
+            v = 2.0 * Vec3::new(rng.gen(), rng.gen(), rng.gen()) - Vec3::new(1.0, 1.0, 1.0);
+
+            if v.lenght_squared() < 1.0 {
+                break;
+            }
+        }
+
+        v
     }
 }
 

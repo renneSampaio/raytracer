@@ -62,7 +62,7 @@ fn main() {
 
 fn color(ray: &Ray, world: &[Box<Hitable>]) -> Vec3 {
     if let Some(hit) = world.hit(ray, 0.0, std::f32::MAX) {
-        let target = hit.p + hit.normal + random_in_unit_sphere();
+        let target = hit.p + hit.normal + Vec3::random_in_unit_sphere();
         return color(&Ray::new(hit.p, target - hit.p), world) / 2.0;
     }
 
@@ -73,21 +73,6 @@ fn color(ray: &Ray, world: &[Box<Hitable>]) -> Vec3 {
 
     // Gradient from blue to white
     (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
-}
-
-fn random_in_unit_sphere() -> Vec3 {
-    let mut v: Vec3;
-    let mut rng = rand::thread_rng();
-
-    loop {
-        v = 2.0 * Vec3::new(rng.gen(), rng.gen(), rng.gen()) - Vec3::new(1.0, 1.0, 1.0);
-
-        if v.lenght_squared() < 1.0 {
-            break;
-        }
-    }
-
-    v
 }
 
 fn write_image(path: &str, width: u32, height: u32, data: &[u8]) {
