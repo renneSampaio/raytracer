@@ -12,6 +12,7 @@ pub trait Hitable {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitInfo>;
 }
 
+#[derive(Copy, Clone)]
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,

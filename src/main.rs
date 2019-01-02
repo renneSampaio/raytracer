@@ -18,18 +18,17 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 
 fn main() {
-    const WIDTH: u32 = 200;
-    const HEIGHT: u32 = 100;
+    const WIDTH: u32 = 800;
+    const HEIGHT: u32 = 400;
     const NUMBER_OF_STEPS: u32 = 32;
 
     let camera = Camera::new();
 
     let mut world = Vec::<Box<Hitable>>::new();
     world.push(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)));
-    world.push(Box::new(Sphere::new(Vec3::new(0.75, 0.0, -1.0), 0.15)));
-    world.push(Box::new(Sphere::new(Vec3::new(-0.85, 0.0, -1.0), 0.25)));
+    world.push(Box::new(Sphere::new(Vec3::new(0.75, -0.2, -1.0), 0.15)));
+    world.push(Box::new(Sphere::new(Vec3::new(-0.85, -0.2, -1.0), 0.25)));
     world.push(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)));
-    world.push(Box::new(Sphere::new(Vec3::new(0.0, 100.5, -1.0), 100.0)));
 
     let mut data = Vec::<u8>::with_capacity((4 * WIDTH * HEIGHT) as usize);
 
@@ -51,9 +50,9 @@ fn main() {
             }
 
             col /= NUMBER_OF_STEPS as f32;
-            data.push((255.0 * col.r()) as u8);
-            data.push((255.0 * col.g()) as u8);
-            data.push((255.0 * col.b()) as u8);
+            data.push((255.0 * col.r().sqrt()) as u8);
+            data.push((255.0 * col.g().sqrt()) as u8);
+            data.push((255.0 * col.b().sqrt()) as u8);
             data.push(255);
         }
     }
@@ -63,7 +62,8 @@ fn main() {
 
 fn color(ray: &Ray, world: &[Box<Hitable>]) -> Vec3 {
     if let Some(hit) = world.hit(ray, 0.0, std::f32::MAX) {
-        return (hit.normal + Vec3::new(1.0, 1.0, 1.0)) / 2.0;
+        let target = hit.p + hit.normal + random_in_unit_sphere();
+        return color(&Ray::new(hit.p, target - hit.p), world) / 2.0;
     }
 
     let dir = ray.direction;
@@ -73,6 +73,21 @@ fn color(ray: &Ray, world: &[Box<Hitable>]) -> Vec3 {
 
     // Gradient from blue to white
     (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
+}
+
+fn random_in_unit_sphere() -> Vec3 {
+    let mut v: Vec3;
+    let mut rng = rand::thread_rng();
+
+    loop {
+        v = 2.0 * Vec3::new(rng.gen(), rng.gen(), rng.gen()) - Vec3::new(1.0, 1.0, 1.0);
+
+        if v.lenght_squared() < 1.0 {
+            break;
+        }
+    }
+
+    v
 }
 
 fn write_image(path: &str, width: u32, height: u32, data: &[u8]) {
