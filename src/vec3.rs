@@ -1,5 +1,7 @@
 #![allow(dead_code)]
-use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{
+    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Vec3 {
@@ -137,6 +139,15 @@ impl Mul<f32> for Vec3 {
     }
 }
 
+impl Mul<Vec3> for f32 {
+    type Output = Vec3;
+    fn mul(self, rhs: Vec3) -> Vec3 {
+        Vec3 {
+            e: [self * rhs.e[0], self * rhs.e[1], self * rhs.e[2]],
+        }
+    }
+}
+
 impl MulAssign for Vec3 {
     fn mul_assign(&mut self, rhs: Self) {
         self.e[0] *= rhs.e[0];
@@ -183,11 +194,27 @@ impl Div<f32> for Vec3 {
     }
 }
 
+impl Div<Vec3> for f32 {
+    type Output = Vec3;
+    fn div(self, rhs: Vec3) -> Vec3 {
+        Vec3 {
+            e: [self / rhs.e[0], self / rhs.e[1], self / rhs.e[2]],
+        }
+    }
+}
+
 impl DivAssign<f32> for Vec3 {
     fn div_assign(&mut self, rhs: f32) {
         self.e[0] /= rhs;
         self.e[1] /= rhs;
         self.e[2] /= rhs;
+    }
+}
+
+impl Neg for Vec3 {
+    type Output = Vec3;
+    fn neg(self) -> Self {
+        self * -1.0
     }
 }
 
