@@ -5,11 +5,14 @@ use std::io::BufWriter;
 use std::path::Path;
 
 use png::HasParameters;
+use rand::prelude::*;
 
+mod camera;
 mod geometry;
 mod ray;
 mod vec3;
 
+use crate::camera::Camera;
 use crate::geometry::{HitInfo, Hitable, Sphere};
 use crate::ray::Ray;
 use crate::vec3::Vec3;
@@ -17,29 +20,37 @@ use crate::vec3::Vec3;
 fn main() {
     const WIDTH: u32 = 200;
     const HEIGHT: u32 = 100;
+    const NUMBER_OF_STEPS: u32 = 32;
 
-    let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
-    let horizontal = Vec3::left() * 4.0;
-    let vertical = Vec3::up() * 2.0;
-    let origin = Vec3::zero();
+    let camera = Camera::new();
 
     let mut world = Vec::<Box<Hitable>>::new();
     world.push(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)));
     world.push(Box::new(Sphere::new(Vec3::new(0.75, 0.0, -1.0), 0.15)));
     world.push(Box::new(Sphere::new(Vec3::new(-0.85, 0.0, -1.0), 0.25)));
     world.push(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)));
+    world.push(Box::new(Sphere::new(Vec3::new(0.0, 100.5, -1.0), 100.0)));
 
     let mut data = Vec::<u8>::with_capacity((4 * WIDTH * HEIGHT) as usize);
 
+    let mut rng = rand::thread_rng();
+
     for y in (0..HEIGHT).rev() {
         for x in 0..WIDTH {
-            let u = x as f32 / WIDTH as f32;
-            let v = y as f32 / HEIGHT as f32;
+            let mut col = Vec3::zero();
 
-            let ray = Ray::new(origin, lower_left_corner + u * horizontal + v * vertical);
+            for _ in 0..NUMBER_OF_STEPS {
+                let jitter_x: f32 = rng.gen();
+                let jitter_y: f32 = rng.gen();
+                let u = ((x as f32) + jitter_x) / WIDTH as f32;
+                let v = ((y as f32) + jitter_y) / HEIGHT as f32;
 
-            let col = color(&ray, &world);
+                let ray = camera.get_ray(u, v);
 
+                col += color(&ray, &world);
+            }
+
+            col /= NUMBER_OF_STEPS as f32;
             data.push((255.0 * col.r()) as u8);
             data.push((255.0 * col.g()) as u8);
             data.push((255.0 * col.b()) as u8);
@@ -62,20 +73,6 @@ fn color(ray: &Ray, world: &[Box<Hitable>]) -> Vec3 {
 
     // Gradient from blue to white
     (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
-}
-
-fn hit_sphere(center: Vec3, radius: f32, ray: &Ray) -> f32 {
-    let oc = ray.origin - center;
-    let a = ray.direction.lenght_squared();
-    let b = 2.0 * oc.dot(ray.direction);
-    let c = oc.lenght_squared() - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
-
-    if discriminant < 0.0 {
-        return -1.0;
-    }
-
-    (-b - discriminant.sqrt()) / (2.0 * a)
 }
 
 fn write_image(path: &str, width: u32, height: u32, data: &[u8]) {
