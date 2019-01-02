@@ -44,6 +44,30 @@ impl Vec3 {
     pub fn normalized(&self) -> Vec3 {
         *self / self.lenght()
     }
+
+    pub fn zero() -> Vec3 {
+        Vec3 { e: [0.0, 0.0, 0.0] }
+    }
+
+    pub fn left() -> Vec3 {
+        Vec3 { e: [1.0, 0.0, 0.0] }
+    }
+
+    pub fn right() -> Vec3 {
+        Vec3 {
+            e: [-1.0, 0.0, 0.0],
+        }
+    }
+
+    pub fn up() -> Vec3 {
+        Vec3 { e: [0.0, 1.0, 0.0] }
+    }
+
+    pub fn down() -> Vec3 {
+        Vec3 {
+            e: [0.0, -1.0, 0.0],
+        }
+    }
 }
 
 /**
