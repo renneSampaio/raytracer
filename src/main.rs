@@ -43,6 +43,10 @@ fn main() {
 }
 
 fn color(ray: &Ray) -> Vec3 {
+    if hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, ray) {
+        return Vec3::new(1.0, 0.0, 0.0);
+    }
+
     let dir = ray.direction;
 
     // Puts t in the range 0..1
@@ -50,6 +54,15 @@ fn color(ray: &Ray) -> Vec3 {
 
     // Gradient from blue to white
     (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
+}
+
+fn hit_sphere(center: Vec3, radius: f32, ray: &Ray) -> bool {
+    let oc = ray.origin - center;
+    let a = ray.direction.lenght_squared();
+    let b = 2.0 * oc.dot(ray.direction);
+    let c = oc.lenght_squared() - radius * radius;
+
+    b * b - 4.0 * a * c > 0.0
 }
 
 fn write_image(path: &str, width: u32, height: u32, data: &[u8]) {
