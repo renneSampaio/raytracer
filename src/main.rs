@@ -14,14 +14,6 @@ fn main() {
     const WIDTH: u32 = 200;
     const HEIGHT: u32 = 100;
 
-    let path = Path::new(r"test.png");
-    let file = File::create(path).unwrap();
-    let w = &mut BufWriter::new(file);
-
-    let mut encoder = png::Encoder::new(w, WIDTH, HEIGHT);
-    encoder.set(png::ColorType::RGBA).set(png::BitDepth::Eight);
-    let mut writer = encoder.write_header().unwrap();
-
     let mut data = Vec::<u8>::with_capacity((4 * WIDTH * HEIGHT) as usize);
     let d_height = 255 / HEIGHT;
     let d_width = 255 / WIDTH;
@@ -41,5 +33,17 @@ fn main() {
         }
     }
 
-    writer.write_image_data(&data).unwrap();
+    write_image("test.png", WIDTH, HEIGHT, &data);
+}
+
+fn write_image(path: &str, width: u32, height: u32, data: &[u8]) {
+    let path = Path::new(path);
+    let file = File::create(path).unwrap();
+    let w = &mut BufWriter::new(file);
+
+    let mut encoder = png::Encoder::new(w, width, height);
+    encoder.set(png::ColorType::RGBA).set(png::BitDepth::Eight);
+    let mut writer = encoder.write_header().unwrap();
+
+    writer.write_image_data(data).unwrap();
 }
