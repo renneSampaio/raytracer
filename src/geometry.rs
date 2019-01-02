@@ -1,6 +1,7 @@
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
+#[derive(Clone, Copy)]
 pub struct HitInfo {
     pub t: f32,
     pub p: Vec3,
@@ -48,5 +49,21 @@ impl Hitable for Sphere {
         }
 
         None
+    }
+}
+
+impl Hitable for [Box<Hitable>] {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitInfo> {
+        let mut closest_so_far = t_max;
+        let mut hit: Option<HitInfo> = None;
+
+        for hitable in self.iter() {
+            if let Some(h) = hitable.hit(ray, t_min, closest_so_far) {
+                hit = Some(h);
+                closest_so_far = h.t;
+            }
+        }
+
+        hit
     }
 }
