@@ -6,9 +6,11 @@ use std::path::Path;
 
 use png::HasParameters;
 
+mod geometry;
 mod ray;
 mod vec3;
 
+use crate::geometry::{HitInfo, Hitable, Sphere};
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
@@ -21,6 +23,12 @@ fn main() {
     let vertical = Vec3::up() * 2.0;
     let origin = Vec3::zero();
 
+    let mut world = Vec::<Box<Hitable>>::new();
+    world.push(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)));
+    world.push(Box::new(Sphere::new(Vec3::new(0.75, 0.0, -1.0), 0.15)));
+    world.push(Box::new(Sphere::new(Vec3::new(-0.85, 0.0, -1.0), 0.25)));
+    world.push(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)));
+
     let mut data = Vec::<u8>::with_capacity((4 * WIDTH * HEIGHT) as usize);
 
     for y in (0..HEIGHT).rev() {
@@ -30,7 +38,7 @@ fn main() {
 
             let ray = Ray::new(origin, lower_left_corner + u * horizontal + v * vertical);
 
-            let col = color(&ray);
+            let col = color(&ray, &world);
 
             data.push((255.0 * col.r()) as u8);
             data.push((255.0 * col.g()) as u8);
@@ -42,12 +50,9 @@ fn main() {
     write_image("test.png", WIDTH, HEIGHT, &data);
 }
 
-fn color(ray: &Ray) -> Vec3 {
-    let t = hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, ray);
-    if t > 0.0 {
-        let n = ray.point_at_parameter(t) - Vec3::new(0.0, 0.0, -1.0);
-
-        return (n + Vec3::new(1.0, 1.0, 1.0)) / 2.0;
+fn color(ray: &Ray, world: &[Box<Hitable>]) -> Vec3 {
+    if let Some(hit) = world.hit(ray, 0.0, std::f32::MAX) {
+        return (hit.normal + Vec3::new(1.0, 1.0, 1.0)) / 2.0;
     }
 
     let dir = ray.direction;
