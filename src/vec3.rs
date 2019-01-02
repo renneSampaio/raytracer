@@ -27,12 +27,12 @@ impl Vec3 {
         }
     }
 
-    pub fn squared_lenght(&self) -> f32 {
+    pub fn lenght_squared(&self) -> f32 {
         self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
     }
 
     pub fn lenght(&self) -> f32 {
-        self.squared_lenght().sqrt()
+        self.lenght_squared().sqrt()
     }
 
     pub fn normalize(&mut self) {
@@ -437,7 +437,7 @@ mod tests {
     fn length_squared() {
         let v1 = Vec3::new(1.0, 2.0, 3.0);
 
-        assert!((v1.squared_lenght() - 14.0).abs() < std::f32::EPSILON);
+        assert!((v1.lenght_squared() - 14.0).abs() < std::f32::EPSILON);
     }
 
     #[test]
