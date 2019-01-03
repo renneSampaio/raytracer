@@ -20,11 +20,11 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 
 fn main() {
-    const WIDTH: u32 = 400;
-    const HEIGHT: u32 = 300;
-    const NUMBER_OF_STEPS: u32 = 32;
+    const WIDTH: u32 = 800;
+    const HEIGHT: u32 = 600;
+    const NUMBER_OF_STEPS: u32 = 100;
 
-    let look_from = Vec3::new(10.0, 2.0, 2.5);
+    let look_from = Vec3::new(11.0, 2.0, 2.5);
     let look_at = Vec3::new(0.0, 0.0, 0.0);
     let apertune = 0.05;
     let dist_to_focus = (look_from - look_at).lenght();
@@ -33,7 +33,7 @@ fn main() {
         look_from,
         look_at,
         Vec3::up(),
-        30.0,
+        25.0,
         WIDTH as f32 / HEIGHT as f32,
         apertune,
         dist_to_focus,
