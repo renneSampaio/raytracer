@@ -35,24 +35,26 @@ fn main() {
         },
     )));
     world.push(Box::new(Sphere::new(
-        Vec3::new(0.75, -0.2, -1.0),
-        0.15,
-        Lambertian {
-            albedo: Vec3::new(0.8, 0.8, 0.0),
+        Vec3::new(1.0, 0.0, -1.0),
+        0.5,
+        Metal {
+            albedo: Vec3::new(0.8, 0.6, 0.2),
+            fuzz: 1.0,
         },
     )));
     world.push(Box::new(Sphere::new(
-        Vec3::new(-0.85, -0.2, -1.0),
-        0.25,
+        Vec3::new(-1.0, 0.0, -1.0),
+        0.5,
         Metal {
-            albedo: Vec3::new(0.8, 0.6, 0.3),
+            albedo: Vec3::new(0.8, 0.8, 0.8),
+            fuzz: 0.3,
         },
     )));
     world.push(Box::new(Sphere::new(
         Vec3::new(0.0, -100.5, -1.0),
         100.0,
-        Metal {
-            albedo: Vec3::new(0.8, 0.3, 0.3),
+        Lambertian {
+            albedo: Vec3::new(0.8, 0.8, 0.0),
         },
     )));
 
@@ -88,12 +90,12 @@ fn main() {
 
 fn color(ray: &Ray, world: &[Box<Hitable>], rng: &mut rand::RngCore, depth: i32) -> Vec3 {
     if let Some(hit) = world.hit(ray, 0.001, std::f32::MAX) {
-        if let Some((scatter, attenuation)) = hit.material.scatter(ray, &hit, rng) {
-            if depth < 25 {
-                return attenuation * color(&scatter, world, rng, depth + 1);
-            } else {
-                return Vec3::zero();
-            }
+        let scatter_data = hit.material.scatter(ray, &hit, rng);
+        if depth < 50 && scatter_data.is_some() {
+            let (scatter, attenuation) = scatter_data.unwrap();
+            return attenuation * color(&scatter, world, rng, depth + 1);
+        } else {
+            return Vec3::zero();
         }
     }
 
