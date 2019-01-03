@@ -9,11 +9,13 @@ use rand::prelude::*;
 
 mod camera;
 mod geometry;
+mod material;
 mod ray;
 mod vec3;
 
 use crate::camera::Camera;
 use crate::geometry::{HitInfo, Hitable, Sphere};
+use crate::material::Material::*;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
@@ -25,10 +27,34 @@ fn main() {
     let camera = Camera::new();
 
     let mut world = Vec::<Box<Hitable>>::new();
-    world.push(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)));
-    world.push(Box::new(Sphere::new(Vec3::new(0.75, -0.2, -1.0), 0.15)));
-    world.push(Box::new(Sphere::new(Vec3::new(-0.85, -0.2, -1.0), 0.25)));
-    world.push(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)));
+    world.push(Box::new(Sphere::new(
+        Vec3::new(0.0, 0.0, -1.0),
+        0.5,
+        Lambertian {
+            albedo: Vec3::new(0.8, 0.3, 0.3),
+        },
+    )));
+    world.push(Box::new(Sphere::new(
+        Vec3::new(0.75, -0.2, -1.0),
+        0.15,
+        Lambertian {
+            albedo: Vec3::new(0.8, 0.8, 0.0),
+        },
+    )));
+    world.push(Box::new(Sphere::new(
+        Vec3::new(-0.85, -0.2, -1.0),
+        0.25,
+        Metal {
+            albedo: Vec3::new(0.8, 0.6, 0.3),
+        },
+    )));
+    world.push(Box::new(Sphere::new(
+        Vec3::new(0.0, -100.5, -1.0),
+        100.0,
+        Metal {
+            albedo: Vec3::new(0.8, 0.3, 0.3),
+        },
+    )));
 
     let mut data = Vec::<u8>::with_capacity((4 * WIDTH * HEIGHT) as usize);
 
@@ -46,7 +72,7 @@ fn main() {
 
                 let ray = camera.get_ray(u, v);
 
-                col += color(&ray, &world, &mut rng);
+                col += color(&ray, &world, &mut rng, 0);
             }
 
             col /= NUMBER_OF_STEPS as f32;
@@ -60,10 +86,15 @@ fn main() {
     write_image("test.png", WIDTH, HEIGHT, &data);
 }
 
-fn color(ray: &Ray, world: &[Box<Hitable>], rng: &mut rand::RngCore) -> Vec3 {
-    if let Some(hit) = world.hit(ray, 0.0, std::f32::MAX) {
-        let target = hit.p + hit.normal + Vec3::random_in_unit_sphere(rng);
-        return color(&Ray::new(hit.p, target - hit.p), world, rng) / 2.0;
+fn color(ray: &Ray, world: &[Box<Hitable>], rng: &mut rand::RngCore, depth: i32) -> Vec3 {
+    if let Some(hit) = world.hit(ray, 0.001, std::f32::MAX) {
+        if let Some((scatter, attenuation)) = hit.material.scatter(ray, &hit, rng) {
+            if depth < 25 {
+                return attenuation * color(&scatter, world, rng, depth + 1);
+            } else {
+                return Vec3::zero();
+            }
+        }
     }
 
     let dir = ray.direction;

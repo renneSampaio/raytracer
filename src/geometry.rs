@@ -1,3 +1,4 @@
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
@@ -6,6 +7,7 @@ pub struct HitInfo {
     pub t: f32,
     pub p: Vec3,
     pub normal: Vec3,
+    pub material: Material,
 }
 
 pub trait Hitable {
@@ -16,11 +18,16 @@ pub trait Hitable {
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,
+    pub material: Material,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f32) -> Sphere {
-        Sphere { center, radius }
+    pub fn new(center: Vec3, radius: f32, material: Material) -> Sphere {
+        Sphere {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -37,15 +44,27 @@ impl Hitable for Sphere {
             if t > t_min && t < t_max {
                 let p = ray.point_at_parameter(t);
                 let normal = (p - self.center) / self.radius;
+                let material = self.material;
 
-                return Some(HitInfo { t, p, normal });
+                return Some(HitInfo {
+                    t,
+                    p,
+                    normal,
+                    material,
+                });
             }
             let t = (-b + discriminant.sqrt()) / a;
             if t > t_min && t < t_max {
                 let p = ray.point_at_parameter(t);
                 let normal = (p - self.center) / self.radius;
+                let material = self.material;
 
-                return Some(HitInfo { t, p, normal });
+                return Some(HitInfo {
+                    t,
+                    p,
+                    normal,
+                    material,
+                });
             }
         }
 
