@@ -100,6 +100,20 @@ impl Vec3 {
 
         v
     }
+
+    pub fn random_in_unit_disk(rng: &mut rand::RngCore) -> Vec3 {
+        let mut v: Vec3;
+
+        loop {
+            v = 2.0 * Vec3::new(rng.gen(), rng.gen(), 0.0) - Vec3::new(1.0, 1.0, 0.0);
+
+            if v.lenght_squared() < 1.0 {
+                break;
+            }
+        }
+
+        v
+    }
 }
 
 /**

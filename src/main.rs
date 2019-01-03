@@ -24,12 +24,19 @@ fn main() {
     const HEIGHT: u32 = 600;
     const NUMBER_OF_STEPS: u32 = 32;
 
+    let look_from = Vec3::new(3.0, 3.0, 2.0);
+    let look_at = Vec3::new(0.0, 0.0, -1.0);
+    let apertune = 2.0;
+    let dist_to_focus = (look_from - look_at).lenght();
+
     let camera = Camera::new(
-        Vec3::new(-2.0, 2.0, 1.0),
-        Vec3::new(0.0, 0.0, -1.0),
+        look_from,
+        look_at,
         Vec3::up(),
-        40.0,
+        20.0,
         WIDTH as f32 / HEIGHT as f32,
+        apertune,
+        dist_to_focus,
     );
 
     let mut world = Vec::<Box<Hitable>>::new();
@@ -80,7 +87,7 @@ fn main() {
                 let u = ((x as f32) + jitter_x) / WIDTH as f32;
                 let v = ((y as f32) + jitter_y) / HEIGHT as f32;
 
-                let ray = camera.get_ray(u, v);
+                let ray = camera.get_ray(u, v, &mut rng);
 
                 col += color(&ray, &world, &mut rng, 0);
             }
