@@ -45,10 +45,12 @@ fn main() {
     world.push(Box::new(Sphere::new(
         Vec3::new(-1.0, 0.0, -1.0),
         0.5,
-        Metal {
-            albedo: Vec3::new(0.8, 0.8, 0.8),
-            fuzz: 0.3,
-        },
+        Dieletric { ref_idx: 1.5 },
+    )));
+    world.push(Box::new(Sphere::new(
+        Vec3::new(-1.0, 0.0, -1.0),
+        -0.45,
+        Dieletric { ref_idx: 1.5 },
     )));
     world.push(Box::new(Sphere::new(
         Vec3::new(0.0, -100.5, -1.0),

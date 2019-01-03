@@ -2,6 +2,8 @@ use crate::geometry::HitInfo;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
+use rand::prelude::*;
+
 #[derive(Clone, Copy, Debug)]
 pub enum Material {
     Lambertian { albedo: Vec3 },
@@ -49,19 +51,30 @@ impl Material {
         let reflected = ray.direction.normalized().reflect(hit.normal);
         let attenuation = Vec3::new(1.0, 1.0, 1.0);
 
-        let ni_over_nt: f32;
         let outward_normal: Vec3;
+        let cosine: f32;
+        let ni_over_nt: f32;
 
         if ray.direction.dot(hit.normal) > 0.0 {
             outward_normal = -hit.normal;
             ni_over_nt = ref_idx;
+            cosine = ref_idx * ray.direction.dot(hit.normal) / ray.direction.lenght();
         } else {
             outward_normal = hit.normal;
             ni_over_nt = 1.0 / ref_idx;
+            cosine = -ray.direction.dot(hit.normal) / ray.direction.lenght();
         }
 
+        let reflect_prob: f32;
+
         if let Some(refracted) = ray.direction.refract(&outward_normal, ni_over_nt) {
-            Some((Ray::new(hit.p, refracted), attenuation))
+            reflect_prob = schlick(cosine, ref_idx);
+
+            if reflect_prob < rng.gen() {
+                Some((Ray::new(hit.p, refracted), attenuation))
+            } else {
+                Some((Ray::new(hit.p, reflected), attenuation))
+            }
         } else {
             Some((Ray::new(hit.p, reflected), attenuation))
         }
@@ -81,4 +94,10 @@ impl Material {
             Material::Dieletric { ref_idx } => Material::scatter_dieletric(ray, hit, ref_idx, rng),
         }
     }
+}
+
+fn schlick(cosine: f32, ref_idx: f32) -> f32 {
+    let r0 = (1.0 - ref_idx) / (1.0 + ref_idx).powf(2.0);
+
+    r0 + (1.0 - r0) * (1.0 - cosine).powf(5.0)
 }
