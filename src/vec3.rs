@@ -71,9 +71,8 @@ impl Vec3 {
         }
     }
 
-    pub fn random_in_unit_sphere() -> Vec3 {
+    pub fn random_in_unit_sphere(rng: &mut rand::RngCore) -> Vec3 {
         let mut v: Vec3;
-        let mut rng = rand::thread_rng();
 
         loop {
             v = 2.0 * Vec3::new(rng.gen(), rng.gen(), rng.gen()) - Vec3::new(1.0, 1.0, 1.0);

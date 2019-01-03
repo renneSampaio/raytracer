@@ -18,8 +18,8 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 
 fn main() {
-    const WIDTH: u32 = 800;
-    const HEIGHT: u32 = 400;
+    const WIDTH: u32 = 200;
+    const HEIGHT: u32 = 100;
     const NUMBER_OF_STEPS: u32 = 32;
 
     let camera = Camera::new();
@@ -46,7 +46,7 @@ fn main() {
 
                 let ray = camera.get_ray(u, v);
 
-                col += color(&ray, &world);
+                col += color(&ray, &world, &mut rng);
             }
 
             col /= NUMBER_OF_STEPS as f32;
@@ -60,10 +60,10 @@ fn main() {
     write_image("test.png", WIDTH, HEIGHT, &data);
 }
 
-fn color(ray: &Ray, world: &[Box<Hitable>]) -> Vec3 {
+fn color(ray: &Ray, world: &[Box<Hitable>], rng: &mut rand::RngCore) -> Vec3 {
     if let Some(hit) = world.hit(ray, 0.0, std::f32::MAX) {
-        let target = hit.p + hit.normal + Vec3::random_in_unit_sphere();
-        return color(&Ray::new(hit.p, target - hit.p), world) / 2.0;
+        let target = hit.p + hit.normal + Vec3::random_in_unit_sphere(rng);
+        return color(&Ray::new(hit.p, target - hit.p), world, rng) / 2.0;
     }
 
     let dir = ray.direction;
