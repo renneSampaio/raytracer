@@ -33,6 +33,18 @@ impl Vec3 {
         *self - 2.0 * self.dot(n) * n
     }
 
+    pub fn refract(&self, normal: &Vec3, ni_over_nt: f32) -> Option<Vec3> {
+        let v = self.normalized();
+        let dt = v.dot(*normal);
+        let discriminant = 1.0 - ni_over_nt * ni_over_nt * (1.0 - dt * dt);
+
+        if discriminant > 0.0 {
+            Some(ni_over_nt * (v - *normal * dt) - *normal * discriminant.sqrt())
+        } else {
+            None
+        }
+    }
+
     pub fn lenght_squared(&self) -> f32 {
         self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
     }
