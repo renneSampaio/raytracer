@@ -20,18 +20,24 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 
 fn main() {
-    const WIDTH: u32 = 200;
-    const HEIGHT: u32 = 100;
+    const WIDTH: u32 = 800;
+    const HEIGHT: u32 = 600;
     const NUMBER_OF_STEPS: u32 = 32;
 
-    let camera = Camera::new();
+    let camera = Camera::new(
+        Vec3::new(-2.0, 2.0, 1.0),
+        Vec3::new(0.0, 0.0, -1.0),
+        Vec3::up(),
+        40.0,
+        WIDTH as f32 / HEIGHT as f32,
+    );
 
     let mut world = Vec::<Box<Hitable>>::new();
     world.push(Box::new(Sphere::new(
         Vec3::new(0.0, 0.0, -1.0),
         0.5,
         Lambertian {
-            albedo: Vec3::new(0.8, 0.3, 0.3),
+            albedo: Vec3::new(0.3, 0.3, 0.8),
         },
     )));
     world.push(Box::new(Sphere::new(
