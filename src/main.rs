@@ -20,62 +20,30 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 
 fn main() {
-    const WIDTH: u32 = 800;
-    const HEIGHT: u32 = 600;
+    const WIDTH: u32 = 400;
+    const HEIGHT: u32 = 300;
     const NUMBER_OF_STEPS: u32 = 32;
 
-    let look_from = Vec3::new(3.0, 3.0, 2.0);
-    let look_at = Vec3::new(0.0, 0.0, -1.0);
-    let apertune = 2.0;
+    let look_from = Vec3::new(10.0, 2.0, 2.5);
+    let look_at = Vec3::new(0.0, 0.0, 0.0);
+    let apertune = 0.05;
     let dist_to_focus = (look_from - look_at).lenght();
 
     let camera = Camera::new(
         look_from,
         look_at,
         Vec3::up(),
-        20.0,
+        30.0,
         WIDTH as f32 / HEIGHT as f32,
         apertune,
         dist_to_focus,
     );
 
-    let mut world = Vec::<Box<Hitable>>::new();
-    world.push(Box::new(Sphere::new(
-        Vec3::new(0.0, 0.0, -1.0),
-        0.5,
-        Lambertian {
-            albedo: Vec3::new(0.3, 0.3, 0.8),
-        },
-    )));
-    world.push(Box::new(Sphere::new(
-        Vec3::new(1.0, 0.0, -1.0),
-        0.5,
-        Metal {
-            albedo: Vec3::new(0.8, 0.6, 0.2),
-            fuzz: 1.0,
-        },
-    )));
-    world.push(Box::new(Sphere::new(
-        Vec3::new(-1.0, 0.0, -1.0),
-        0.5,
-        Dieletric { ref_idx: 1.5 },
-    )));
-    world.push(Box::new(Sphere::new(
-        Vec3::new(-1.0, 0.0, -1.0),
-        -0.45,
-        Dieletric { ref_idx: 1.5 },
-    )));
-    world.push(Box::new(Sphere::new(
-        Vec3::new(0.0, -100.5, -1.0),
-        100.0,
-        Lambertian {
-            albedo: Vec3::new(0.8, 0.8, 0.0),
-        },
-    )));
+    let mut rng = rand::thread_rng();
+
+    let world = random_scene(&mut rng);
 
     let mut data = Vec::<u8>::with_capacity((4 * WIDTH * HEIGHT) as usize);
-
-    let mut rng = rand::thread_rng();
 
     for y in (0..HEIGHT).rev() {
         for x in 0..WIDTH {
@@ -97,6 +65,12 @@ fn main() {
             data.push((255.0 * col.g().sqrt()) as u8);
             data.push((255.0 * col.b().sqrt()) as u8);
             data.push(255);
+
+            print!("\r\r");
+            print!(
+                "{:.2}% Completed                                   ",
+                (data.len() * 25) as f32 / (WIDTH * HEIGHT) as f32
+            );
         }
     }
 
@@ -133,4 +107,84 @@ fn write_image(path: &str, width: u32, height: u32, data: &[u8]) {
     let mut writer = encoder.write_header().unwrap();
 
     writer.write_image_data(data).unwrap();
+}
+
+fn random_scene(rng: &mut rand::RngCore) -> Vec<Box<Hitable>> {
+    let mut world = Vec::<Box<Hitable>>::new();
+    world.push(Box::new(Sphere::new(
+        Vec3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Lambertian {
+            albedo: Vec3::new(0.5, 0.5, 0.5),
+        },
+    )));
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let mat_choice: f32 = rng.gen();
+
+            let center = Vec3::new(
+                a as f32 + 0.9 * rng.gen::<f32>(),
+                0.2,
+                b as f32 + 0.9 * rng.gen::<f32>(),
+            );
+            if (center - Vec3::new(4.0, 0.2, 0.0)).lenght() > 0.9 {
+                if mat_choice < 0.8 {
+                    world.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Lambertian {
+                            albedo: Vec3::new(
+                                rng.gen::<f32>() * rng.gen::<f32>(),
+                                rng.gen::<f32>() * rng.gen::<f32>(),
+                                rng.gen::<f32>() * rng.gen::<f32>(),
+                            ),
+                        },
+                    )));
+                } else if mat_choice < 0.95 {
+                    world.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Metal {
+                            albedo: Vec3::new(
+                                0.5 * (1.0 + rng.gen::<f32>()),
+                                0.5 * (1.0 + rng.gen::<f32>()),
+                                0.5 * (1.0 + rng.gen::<f32>()),
+                            ),
+                            fuzz: 0.5 * rng.gen::<f32>(),
+                        },
+                    )));
+                } else {
+                    world.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Dieletric { ref_idx: 1.5 },
+                    )));
+                }
+            }
+        }
+    }
+
+    world.push(Box::new(Sphere::new(
+        Vec3::new(0.0, 1.0, 0.0),
+        1.0,
+        Dieletric { ref_idx: 1.5 },
+    )));
+    world.push(Box::new(Sphere::new(
+        Vec3::new(-4.0, 1.0, 0.0),
+        1.0,
+        Lambertian {
+            albedo: Vec3::new(0.1, 0.2, 0.4),
+        },
+    )));
+    world.push(Box::new(Sphere::new(
+        Vec3::new(4.0, 1.0, 0.0),
+        1.0,
+        Metal {
+            albedo: Vec3::new(0.7, 0.6, 0.5),
+            fuzz: 0.0,
+        },
+    )));
+
+    world
 }
