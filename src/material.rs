@@ -8,7 +8,7 @@ use rand::prelude::*;
 pub enum Material {
     Lambertian { albedo: Vec3 },
     Metal { albedo: Vec3, fuzz: f32 },
-    Dieletric { ref_idx: f32 },
+    Dielectric { ref_idx: f32 },
 }
 
 impl Material {
@@ -42,7 +42,7 @@ impl Material {
         }
     }
 
-    fn scatter_dieletric(
+    fn scatter_dielectric(
         ray: &Ray,
         hit: &HitInfo,
         ref_idx: f32,
@@ -91,7 +91,9 @@ impl Material {
             Material::Metal { albedo, fuzz } => {
                 Material::scatter_metal(albedo, ray, hit, fuzz, rng)
             }
-            Material::Dieletric { ref_idx } => Material::scatter_dieletric(ray, hit, ref_idx, rng),
+            Material::Dielectric { ref_idx } => {
+                Material::scatter_dielectric(ray, hit, ref_idx, rng)
+            }
         }
     }
 }

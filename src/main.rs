@@ -158,7 +158,7 @@ fn random_scene(rng: &mut rand::RngCore) -> Vec<Box<Hitable>> {
                     world.push(Box::new(Sphere::new(
                         center,
                         0.2,
-                        Dieletric { ref_idx: 1.5 },
+                        Dielectric { ref_idx: 1.5 },
                     )));
                 }
             }
@@ -168,7 +168,7 @@ fn random_scene(rng: &mut rand::RngCore) -> Vec<Box<Hitable>> {
     world.push(Box::new(Sphere::new(
         Vec3::new(0.0, 1.0, 0.0),
         1.0,
-        Dieletric { ref_idx: 1.5 },
+        Dielectric { ref_idx: 1.5 },
     )));
     world.push(Box::new(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
