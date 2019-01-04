@@ -43,38 +43,51 @@ fn main() {
 
     let world = random_scene(&mut rng);
 
-    let mut data = Vec::<u8>::with_capacity((4 * WIDTH * HEIGHT) as usize);
+    let data = raytrace(&world, &camera, WIDTH, HEIGHT, NUMBER_OF_STEPS, &mut rng);
 
-    for y in (0..HEIGHT).rev() {
-        for x in 0..WIDTH {
+    write_image("test.png", WIDTH, HEIGHT, &data);
+}
+
+fn raytrace(
+    world: &[Box<Hitable>],
+    camera: &Camera,
+    width: u32,
+    height: u32,
+    samples: u32,
+    rng: &mut rand::RngCore,
+) -> Vec<u8> {
+    let mut data = Vec::<u8>::with_capacity((4 * width * height) as usize);
+
+    for y in (0..height).rev() {
+        for x in 0..width {
             let mut col = Vec3::zero();
 
-            for _ in 0..NUMBER_OF_STEPS {
+            for _ in 0..samples {
                 let jitter_x: f32 = rng.gen();
                 let jitter_y: f32 = rng.gen();
-                let u = ((x as f32) + jitter_x) / WIDTH as f32;
-                let v = ((y as f32) + jitter_y) / HEIGHT as f32;
+                let u = ((x as f32) + jitter_x) / width as f32;
+                let v = ((y as f32) + jitter_y) / height as f32;
 
-                let ray = camera.get_ray(u, v, &mut rng);
+                let ray = camera.get_ray(u, v, rng);
 
-                col += color(&ray, &world, &mut rng, 0);
+                col += color(&ray, &world, rng, 0);
             }
 
-            col /= NUMBER_OF_STEPS as f32;
+            col /= samples as f32;
             data.push((255.0 * col.r().sqrt()) as u8);
             data.push((255.0 * col.g().sqrt()) as u8);
             data.push((255.0 * col.b().sqrt()) as u8);
             data.push(255);
 
-            print!("\r\r");
+            print!("\r");
             print!(
                 "{:.2}% Completed                                   ",
-                (data.len() * 25) as f32 / (WIDTH * HEIGHT) as f32
+                (data.len() * 25) as f32 / (width * height) as f32
             );
         }
     }
 
-    write_image("test.png", WIDTH, HEIGHT, &data);
+    data
 }
 
 fn color(ray: &Ray, world: &[Box<Hitable>], rng: &mut rand::RngCore, depth: i32) -> Vec3 {
